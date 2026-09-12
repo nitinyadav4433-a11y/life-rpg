@@ -1,0 +1,82 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+model User {
+  id        String      @id @default(cuid())
+  email     String      @unique
+  password  String
+  username  String      @unique
+  createdAt DateTime    @default(now())
+  character Character?
+  quests    Quest[]
+  activity  Activity[]
+  inventory InventoryItem[]
+  badges    UserBadge[]
+}
+
+model Character {
+  id          String @id @default(cuid())
+  userId      String @unique
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level       Int    @default(1)
+  xp          Int    @default(0)
+  gold        Int    @default(0)
+  strength    Int    @default(1)
+  intellect   Int    @default(1)
+  vitality    Int    @default(1)
+  discipline  Int    @default(1)
+  updatedAt   DateTime @updatedAt
+}
+
+model Quest {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?
+  category       String
+  difficulty     String
+  xpReward       Int
+  goldReward     Int
+  attribute      String
+  dueDate        DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  @@index([userId, completedAt])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  createdAt DateTime @default(now())
+  @@unique([userId, date])
+}
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemKey     String
+  quantity    Int      @default(1)
+  purchasedAt DateTime @default(now())
+  @@unique([userId, itemKey])
+}
+
+model Badge {
+  id          String @id @default(cuid())
+  key         String @unique
+  name        String
+  description String
+}
+
+model UserBadge {
+  userId    String
+  badgeId   String
+  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  earnedAt  DateTime @default(now())
+  @@id([userId, badgeId])
+}
