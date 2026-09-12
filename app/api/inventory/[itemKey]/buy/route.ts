@@ -1,3 +1,7 @@
 import {NextResponse} from 'next/server'; import {getUserId} from '@/lib/auth'; import {db} from '@/lib/db';
-const items:Record<string,{name:string,cost:number}>={ember:'Ember Aura',focus:'Focus Sigil',moon:'Moonlit Theme'};
+const items: Record<string, { name: string; cost: number }> = {
+  ember: { name: 'Ember Aura', cost: 120 },
+  focus: { name: 'Focus Sigil', cost: 180 },
+  moonlit: { name: 'Moonlit Theme', cost: 260 },
+};
 export async function POST(_:Request,{params}:{params:Promise<{itemKey:string}>}){const uid=await getUserId();if(!uid)return NextResponse.json({error:'Unauthorized'},{status:401});const {itemKey}=await params;const item=items[itemKey];if(!item)return NextResponse.json({error:'Item not found.'},{status:404});try{const inv=await db.$transaction(async tx=>{const c=await tx.character.findUnique({where:{userId:uid}});if(!c||c.gold<item.cost)throw new Error('Not enough gold');await tx.character.update({where:{userId:uid},data:{gold:{decrement:item.cost}}});return tx.inventoryItem.upsert({where:{userId_itemKey:{userId:uid,itemKey}},create:{userId:uid,itemKey,quantity:1},update:{quantity:{increment:1}}})});return NextResponse.json({item:inv})}catch{return NextResponse.json({error:'Not enough gold.'},{status:400})}}
