@@ -19,7 +19,6 @@ model User {
   inventory InventoryItem[]
   badges    UserBadge[]
 }
-
 model Character {
   id          String @id @default(cuid())
   userId      String @unique
@@ -31,9 +30,9 @@ model Character {
   intellect   Int    @default(1)
   vitality    Int    @default(1)
   discipline  Int    @default(1)
+  equippedItemKey String?
   updatedAt   DateTime @updatedAt
 }
-
 model Quest {
   id             String   @id @default(cuid())
   userId         String
@@ -51,7 +50,6 @@ model Quest {
   updatedAt      DateTime @updatedAt
   @@index([userId, completedAt])
 }
-
 model Activity {
   id        String   @id @default(cuid())
   userId    String
@@ -60,7 +58,6 @@ model Activity {
   createdAt DateTime @default(now())
   @@unique([userId, date])
 }
-
 model InventoryItem {
   id          String   @id @default(cuid())
   userId      String
@@ -78,7 +75,6 @@ model Badge {
   description String
   userBadges  UserBadge[]
 }
-
 model UserBadge {
   userId    String
   badgeId   String
